@@ -35,10 +35,16 @@ Duas camadas:
 | Skill | Quando | O que faz |
 | --- | --- | --- |
 | `/hm-init` | Início de projeto | Melhores ferramentas, melhor estrutura, melhores práticas. World-class desde o primeiro arquivo. |
-| `/hm-engineer` | Validar código | Arquitetura, segurança, performance, custo, qualidade. Todas as camadas. Production-grade. |
-| `/hm-designer` | Validar interface | Pra onde o software está indo, não pra onde ele esteve. Sofisticação, encantamento, beleza. |
-| `/hm-qa` | Testar tudo | Roda, quebra, verifica que funciona. Edge cases, fluxos, agente, infra, uso real. |
-| `/hm-deploy` | Validar deploy | Containers, migrations, reprodutibilidade, segurança. Pronto pra sair do local. |
+| `/hm-engineer` | Validar código | Arquitetura, segurança, performance, custo, qualidade. Todas as camadas. Production-grade. LLM patterns nativos. |
+| `/hm-security` | Auditoria de segurança | OWASP Top 10, ASVS L1/L2/L3, secrets, supply chain, LLM gotchas, multi-tenant, file upload, business logic. Padrão Tempest/Trail of Bits. |
+| `/hm-designer` | Validar interface | Pra onde o software está indo, não pra onde ele esteve. Sofisticação, encantamento, beleza. Padrão Linear/Stripe/A24. |
+| `/hm-ux-flow` | Validar fluxo | Não substitui designer (visual). Foca em DECISÃO do user. Friction points, hierarquia, recovery. |
+| `/hm-qa` | Testar tudo | Roda, quebra, verifica que funciona. Edge cases, fluxos, agente, infra, uso real. Checklist de bugs recorrentes. |
+| `/hm-perf` | Performance profiling | Bundle, render, API latency, DB, LLM tokens, network, memory. Numbers concretos com fix por gargalo. |
+| `/hm-data-integrity` | Dados sagrados | Backup, migration safety, destrutivas, runtime integrity, DR plan, compliance, file integrity. |
+| `/hm-llm-guardrails` | App com LLM | 12 patterns obrigatórios: sliding window, lazy client, in-flight dedupe, streaming abort, schema validation, cross-channel safety, cost tracking. |
+| `/hm-deploy` | Validar deploy | Multi-modelo: Container, Serverless, Desktop (Electron), Mobile (Expo), Library, CLI. Reprodutibilidade, segurança, dados. |
+| `/hm-validate-all` | Pré-ship completo | Orquestrador: dispara as 5 (security/engineer/qa/designer/deploy) em ordem otimizada, consolida findings priorizados. |
 
 > Skills de direção (`/hm-align`, `/hm-sequoia`) estão em [highermind-business-skills](https://github.com/rodrigohighermind/highermind-business-skills).
 
@@ -47,15 +53,21 @@ Duas camadas:
 ### O fluxo
 
 ```
-/hm-init       você começa um projeto novo. ele nasce certo.
-[constrói]     você dirige, o agente executa.
-/hm-designer   você valida se a interface está na barra.
-/hm-engineer   você valida se o código está na barra.
-/hm-qa         você verifica que realmente funciona.
-/hm-deploy     você valida que sobe, roda e reproduz.
+/hm-init           você começa um projeto novo. ele nasce certo.
+[constrói]         você dirige, o agente executa.
+/hm-designer       interface na barra.
+/hm-ux-flow        fluxo na barra.
+/hm-engineer       código na barra (com LLM patterns).
+/hm-llm-guardrails se app integra Claude/GPT/Gemini.
+/hm-perf           latência/custo/bundle dentro do alvo.
+/hm-data-integrity dados protegidos. backup testado.
+/hm-security       auditoria de segurança L1/L2/L3.
+/hm-qa             funciona end-to-end. edge cases cobertos.
+/hm-deploy         sobe, roda, reproduz. multi-modelo.
+/hm-validate-all   orquestra as 5 principais. report único.
 ```
 
-Você não precisa usar as quatro toda vez. Use o que o momento pede. `/hm-engineer` e `/hm-designer` podem rodar várias vezes enquanto você itera.
+Você não precisa usar todas toda vez. Use o que o momento pede. `/hm-validate-all` é o atalho pré-ship que dispara as 5 essenciais (security/engineer/qa/designer/deploy) e consolida.
 
 > Pra validar direção e estratégia, use as [business skills](https://github.com/rodrigohighermind/highermind-business-skills): `/hm-align` (é a coisa certa?) e `/hm-sequoia` (está indo pro futuro?).
 

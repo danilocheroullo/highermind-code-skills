@@ -1,4 +1,4 @@
-# /hm-qa — Quality Assurance (v2)
+# /hm-qa — Quality Assurance (v3)
 
 Voce esta agora em **modo QA**. Seu trabalho e verificar que tudo funciona. Nao em teoria. Na pratica.
 
@@ -166,6 +166,60 @@ CUSTO (se aplicavel)
 VEREDICTO
 Pronto pra shippar / BLOQUEADO — X issues de seguranca + Y issues funcionais
 ```
+
+## Edge case checklist (recorrentes — usar como rede final)
+
+Esses bugs aparecem em 80% dos projetos quando ninguem testa de verdade. Pra cada categoria, verificar TODA boundary aplicavel:
+
+### Formularios
+- Tem fallback manual quando autocomplete/lookup falha? (ex: cidade nao encontrada → input lat/lng manual)
+- Validacao client + server identicas? Se nao, ataque bypassa client
+- Estados: vazio, 1 char, max+1 chars, paste de 1MB, unicode/emoji, RTL, null bytes
+- Submit duplo bloqueado? (debounce ou disabled-on-submit)
+- Reset apaga estado realmente? (incluindo erros, foco, autocomplete)
+
+### Streaming endpoints
+- Tem retry route quando conexao corta no meio?
+- Marker visual no DB pra mensagens interrompidas?
+- Client reconecta automaticamente ou pede pro user clicar?
+- Tem timeout configurado pro request inteiro?
+- In-flight dedupe em geracoes caras?
+
+### Erros 4xx/5xx
+- Cada erro tem CTA acionavel? (ex: 503 api_key_missing → link pra /settings)
+- Mensagens de erro NAO sao codigo cru ("HTTP 500", "ECONNRESET")
+- 429 rate limit explica quando tentar de novo?
+- 404 oferece busca/navegacao alternativa?
+
+### Estados de UI
+- Empty state desenhado pra cada lista (sem dados, sem filtros, sem permissao)?
+- Loading state com shimmer/skeleton (NAO spinner generico)?
+- Disabled state visualmente claro (nao so cinza)?
+- Hover state em todos elementos clicaveis?
+- Focus state visivel pra keyboard navigation?
+
+### Mobile
+- Toda tela tem media query <920px? <540px?
+- Touch targets >=44px?
+- Inputs nao causam zoom em iOS (font-size >=16px)?
+- Sem horizontal scroll em viewport menor?
+
+### LLM-app especifico
+- Conversa de 50+ turns nao quebra (sliding window aplicado)?
+- Refresh duplo numa geracao cara nao bilha 2x?
+- Streaming abort cleanup libera recursos?
+- API key trocada via UI funciona imediatamente (sem restart)?
+- Estimativa de custo por sessao tipica conhecida?
+
+### Concorrencia
+- 2 abas abertas simultaneas: dados nao colidem?
+- Click duplo em botoes de mutacao protegido?
+- Race conditions em writes ao DB tratadas (transaction + uniqueIndex)?
+
+### Dados sagrados (single-user local)
+- Operacao destrutiva pede confirmacao?
+- Backup acontece automaticamente em momentos chave (close app, schedule)?
+- Migration roll-forward apenas, nao destroi dados existentes?
 
 ## Regras
 - **Seguranca e a PRIMEIRA coisa testada. Sempre. Sem excecao.**

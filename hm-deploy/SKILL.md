@@ -1,4 +1,4 @@
-# /hm-deploy — Validacao de Deploy (v2)
+# /hm-deploy — Validacao de Deploy (v3)
 
 Voce esta agora em **modo deploy**. Seu trabalho e garantir que o projeto esta pronto pra sair do local e ir pro mundo. Ou que o ambiente local esta saudavel e reprodutivel.
 
@@ -16,7 +16,78 @@ Deploy nao e o ultimo passo. E uma camada de engenharia. Se o deploy e fragil, o
 
 ## O que voce valida
 
-### 0. Security Gate (PRIMEIRO — antes de tudo)
+### 0. Distribution Model (PRIMEIRO — define os checks aplicaveis)
+
+Identifique o modelo de distribuicao antes de qualquer auditoria. Cada modelo tem checks proprios — pular o que nao se aplica e parte do trabalho.
+
+| Modelo | Exemplos | Checks aplicaveis |
+|---|---|---|
+| **Container/Docker** | API com Postgres+Redis, monolitos | Dominio 1 inteiro, secrets em compose, multi-stage |
+| **Serverless/Edge** | Vercel, Netlify, CF Workers | Cold start, env vars no dashboard, edge runtime, build output |
+| **Desktop (Electron)** | macOS .app, Windows .exe | electron-builder config, contextIsolation, nodeIntegration false, code signing, secrets embedded warning, auto-update |
+| **Mobile (Expo/RN)** | Apps na App Store / Play | EAS build, certs, App Transport Security, OTA updates, native modules ABI |
+| **Library/SDK** | npm package, PyPI | semver, exports, types, lock file, supply chain, provenance, sem ANY no surface |
+| **CLI tool** | Binario standalone | Cross-platform builds, signing, install path, autoupdate via release |
+
+**Pula secoes que nao se aplicam.** Ex: app Electron NAO tem `.dockerignore` — pule Dominio 1.1. Library NPM NAO tem migrations — pule Dominio 3.
+
+#### Checks por modelo (alem do Security Gate)
+
+**Container/Docker** (cobre Dominio 1 inteiro abaixo)
+
+**Serverless/Edge:**
+- Build output dentro do limite (Vercel: 50MB unzipped por function)?
+- Cold start <1s pra rotas criticas? Se nao, considerar warming ou edge runtime.
+- Env vars sensiveis no dashboard, NUNCA em `next.config.js`?
+- Edge runtime constraints respeitadas (sem `node:` modules, sem fs, sem better-sqlite3)?
+- ISR/cache headers configurados?
+- Domain + SSL configurados pre-deploy?
+
+**Desktop (Electron):**
+- `contextIsolation: true` + `nodeIntegration: false` + `sandbox: true` (default em Electron 28+)?
+- Sem preload script expondo APIs perigosas? Se tem preload, exporta apenas APIs minimas via `contextBridge`?
+- `webSecurity: true` (NUNCA `false`)?
+- Code signing configurado (mesmo que sem identity em dev — documentar warning)?
+- Auto-update via electron-updater? Ou ship manual?
+- **Secrets bundled na .app**: `.env.local` ou similar copiado pro Resources/ — distribuir publicamente vaza secrets. Documentar.
+- Native modules (better-sqlite3, sharp) com ABI Electron rebuild correto?
+- `app.disableHardwareAcceleration()` se necessario?
+- `setAppUserModelId` (Windows) e bundle id (macOS) corretos?
+- Versao Electron com zero CVEs HIGH? `bun audit` / `npm audit` limpo?
+
+**Mobile (Expo/RN):**
+- EAS build profile (development, preview, production) configurado?
+- Certificados/provisioning iOS via EAS?
+- Android keystore versionado em local seguro (NAO no repo)?
+- `app.json` com bundle ID, version, build number corretos?
+- Permissions declaradas (camera, location, etc) com justificativa?
+- App Transport Security: zero `NSAllowsArbitraryLoads = true` em prod?
+- OTA updates configuradas (`expo-updates`) ou versao nativa pinada?
+- Native modules com versoes compativeis com SDK Expo?
+- Firebase/analytics SDKs com config files certos por env?
+
+**Library/SDK:**
+- Lock file commitado (package-lock.json, poetry.lock)?
+- `package.json` com `exports` map definido (ESM + CJS quando aplicavel)?
+- Types em `.d.ts` ou `types` field correto?
+- `files` field limita o que vai pro registry (sem `node_modules`, sem `.env`, sem testes)?
+- Zero `any` no surface publico?
+- Semver respeitado: breaking change = major bump?
+- README com installation + quick start + API reference?
+- Provenance (npm provenance ou cosign) configurado pra supply chain?
+- CI publica via OIDC (sem NPM_TOKEN secreto)?
+- Tag git assinada pra cada release?
+
+**CLI tool:**
+- Cross-platform builds (Linux x64/arm64, macOS x64/arm64, Windows x64)?
+- Signed binaries (Apple Developer ID, Authenticode)?
+- Install path padroniza (Homebrew formula, Scoop manifest, .deb, AUR)?
+- Help text (`--help`, `-h`) cobre todos os comandos?
+- Versao reportada via `--version`?
+- Update check opt-in (sem auto-update silencioso)?
+- Logs vao pra path padrao do OS (XDG_STATE_HOME, ~/Library/Logs, %APPDATA%)?
+
+### 1. Security Gate (Container — pular se modelo != Docker)
 
 **Esta secao e bloqueante. Se qualquer item CRITICO falhar, o deploy NAO esta pronto. Nao importa se tudo mais funciona.**
 

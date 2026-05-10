@@ -6,6 +6,97 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 
 ---
 
+## [3.0.0] — 2026-05-10
+
+LLM-native evolution + 4 skills novas + orquestrador. Motivado por aprendizados rodando as 5 skills num ship real (hm-oracle: tarot multi-rodada + módulo astro + cross-channel context + home meditativa). Onde as skills v2 deixaram passar — bug de chat history sem limite, singleton stale, race condition em geração cara, falta de retry no streaming, falta de fallback manual em forms — agora pegam.
+
+### Adicionado
+
+#### Nova skill: `/hm-validate-all` — orquestrador
+- Dispara as 5 skills de validação em ordem otimizada (security → engineer → qa → designer → deploy)
+- Consolida findings em UM report priorizado (bloqueante ship / corrigir antes uso real / technical debt aceitável)
+- Reconcilia severidades quando duas skills marcam mesmo issue
+- Para no Security Gate se CRITICO encontrado (não desperdiça tempo nas outras 4)
+- Tempo médio: 15-20 min pra projeto médio
+
+#### Nova skill: `/hm-llm-guardrails` — patterns LLM-app
+- 12 patterns obrigatórios pra app que integra Claude/GPT/Gemini
+- Sliding window de chat history (corrige bug de context overflow após 30+ turns)
+- Lazy client factory (sem singleton stale quando user troca API key em runtime)
+- In-flight dedupe pra geração cara (evita double billing em refresh duplo)
+- Rate limit por endpoint LLM (anti-runaway cost)
+- Streaming abort cleanup + retry route com marker no DB
+- Schema validation no response (Zod/Pydantic, sem JSON.parse cego)
+- Token budget explícito (nunca sem max_tokens)
+- Cross-channel context safety (LLM-A injetando em LLM-B com user_notes adversarial)
+- Cost tracking + estimativa por sessão
+- Multi-provider failover (L3, opcional)
+- Tool calling guardrails (sandbox, max iterations, schema validation)
+
+#### Nova skill: `/hm-data-integrity` — dados sagrados
+- Backup strategy (atômico, criptografado, versionado, testado, off-site)
+- Migration safety (idempotente, reversível ou roll-forward only, backup antes)
+- Operações destrutivas (confirmação, soft-delete default, audit log)
+- Runtime integrity (transactions, FK, constraints, idempotency keys)
+- Schema validation runtime (JSON.parse + Zod sempre)
+- DR plan (RPO/RTO, drill executado, runbook escrito)
+- Compliance LGPD/GDPR/HIPAA (right to erasure/access, breach notification)
+- File/blob integrity (checksum, versioning, lifecycle)
+- Observabilidade pra detectar problemas cedo
+
+#### Nova skill: `/hm-perf` — performance profiling
+- Bundle size (alvos por framework: Next, Vite)
+- Render performance (Core Web Vitals: LCP, INP, CLS)
+- API latency (p50/p95/p99)
+- Database (indexes, slow queries, cursor pagination)
+- LLM tokens (cost por turn, prompt caching, latency)
+- Network (HTTP/2, compression, CDN, cache headers)
+- Memory (leaks, listeners, bound caches)
+- Build performance (HMR <2s, cold build <60s)
+- Tools por stack (bundle-analyzer, React DevTools Profiler, pg_stat_statements, web-vitals)
+
+#### Nova skill: `/hm-ux-flow` — validação de fluxo
+- Não substitui `/hm-designer` (visual). Foca em DECISÃO do user.
+- Detecta 3 tipos de friction: decisão desnecessária, mal posicionada, sem informação
+- Hierarquia de decisão (funil: o que → como → confirmar)
+- Reversibilidade (acao reversível vs irreversível vs destrutiva)
+- Recovery de erro (form preserve dados, msgs acionáveis, dead-ends)
+- Friction points conhecidos (onboarding, choice paralysis, missing affordance)
+- Mobile vs desktop (touch targets, gestures, bottom sheets)
+- Empty states + loading states (shimmer obrigatório, sem spinner genérico)
+
+### Mudado
+
+#### `/hm-engineer` v3 — LLM patterns no padrão senior
+- Padrão senior inegociável ganhou 3 itens: zero singletons stale, zero JSON.parse + cast sem validação, zero history unbounded em LLM
+- Nova seção "LLM-app patterns" entre Performance e Custo: 10 patterns recorrentes que scanners não pegam (sliding window, lazy client, in-flight dedupe, streaming abort, cross-channel safety, etc)
+- Cross-reference com `/hm-llm-guardrails` pra deep audit
+
+#### `/hm-security` v2.2 — LLM-app gotchas expandidos
+- Domínio 12 (AI/LLM Security) ganhou 4 sub-domínios novos:
+  - 12.5 PII em prompts ganhou check de "disclaimer transparente ao user"
+  - 12.6 Cross-channel context safety (LLM-A → LLM-B, confused deputy mitigation)
+  - 12.7 API key lifecycle e singleton stale
+  - 12.8 Streaming endpoint safety (abort, resumability, backpressure, in-flight billing)
+  - 12.9 Sliding window obrigatório (CRITICO se chat route sem `.limit(N)`)
+
+#### `/hm-deploy` v3 — multi-modelo distribution
+- Nova seção 0: Distribution Model (identifica modelo antes da auditoria)
+- Checks específicos por modelo: Container/Docker, Serverless/Edge, Desktop (Electron), Mobile (Expo/RN), Library/SDK, CLI tool
+- Antes da v3, era 100% Docker-centric e exigia adaptação mental pra outros modelos
+- Pula seções não aplicáveis ao modelo (ex: Electron não tem `.dockerignore` → pula Domínio 1.1)
+
+#### `/hm-qa` v3 — edge case checklist
+- Nova seção: Edge case checklist (8 categorias × N checks cada)
+- Categorias: Formulários (fallback manual!), Streaming endpoints, Erros 4xx/5xx (CTA acionável!), Estados de UI, Mobile, LLM-app, Concorrência, Dados sagrados
+- Bugs recorrentes em 80% dos projetos quando ninguém testa de verdade
+
+### Filosofia
+
+A v2 era pra times que sabem o que estão fazendo. A v3 é pra times que sabem o que estão fazendo COM LLM. Padrão senior sobrevive — só ganhou patterns nativos do mundo onde apps tem agente, conversa, e chamada externa cara em todo lugar.
+
+---
+
 ## [2.1.0] — 2026-04-08
 
 Security-first evolution. Motivado por falhas reais no Orion Finance (Dockerfile com `npm run dev`, sem `.dockerignore`, `--reload` no entrypoint) que passaram pela v2.

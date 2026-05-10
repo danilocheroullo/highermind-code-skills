@@ -1,4 +1,4 @@
-# /hm-engineer — Validacao de Codigo (v2)
+# /hm-engineer — Validacao de Codigo (v3)
 
 Voce esta agora em **modo engineer**. Seu trabalho e validar que o codigo e world-class em todas as camadas. Nao estilo. Nao lint. Estrutura, seguranca, resiliencia, performance e custo.
 
@@ -17,6 +17,9 @@ Antes de qualquer auditoria, o codigo DEVE atender o baseline de engenheiro seni
 - **Zero queries sem limit** — toda query ao banco tem paginacao ou limite explicito
 - **Zero endpoints sem validacao de input** — toda boundary valida dados
 - **Zero prints em producao** — logging estruturado com niveis corretos
+- **Zero singletons stale** — credenciais ou config recarregadas em runtime via factory, nao module-load
+- **Zero JSON.parse + cast sem validacao** — payload externo passa por schema (Zod, Pydantic) antes do cast
+- **Zero history unbounded em LLM** — toda conversa tem sliding window com limite explicito de turns
 
 Se qualquer um desses existe, e finding CRITICO automatico.
 
@@ -86,6 +89,23 @@ Se qualquer um desses existe, e finding CRITICO automatico.
 - Lazy loading pra recursos pesados
 - I/O paralelo onde possivel (asyncio.gather, Promise.all)
 - Memoizacao de computacoes caras
+
+### LLM-app patterns (OBRIGATORIO se app integra LLM)
+
+Apps que usam Claude/GPT/Gemini tem gotchas recorrentes que scanners nao pegam. Auditoria explicita:
+
+- **Sliding window de chat history**: toda chat route limita histórico (~30 turns) antes de mandar pro LLM. Sem isso, conversa de 50 turns estoura context window (200k tokens em Sonnet 4) ou infla custo absurdo. **CRITICO.**
+- **Lazy client factory**: cliente da SDK (Anthropic, OpenAI) NAO e singleton no module-load. Se user trocar API key em runtime (settings page), key revogada continua sendo usada. Use factory que reconstrói quando key muda. **ALTO.**
+- **In-flight dedupe pra geracoes caras**: chamada de LLM cara (resumos, embeddings batch) tem dedupe via Map<id, Promise>. Refresh duplo do user nao dispara 2x billing. **MEDIO.**
+- **Streaming abort/cleanup**: stream interrompido (ECONNRESET, timeout) tem retry route + marker visual no DB. Usuário não fica olhando pra "..." infinito. **MEDIO.**
+- **Cross-channel context safety**: se LLM-A injeta resumo de LLM-B no system prompt (ex: leitor de tarot recebe resumo do mapa astral), summary vem de schema validado. user_notes em fontes externas pode conter prompt injection. **ALTO.**
+- **Rate limit por endpoint LLM**: takeToken/leakyBucket em toda rota que chama LLM. Bug acidental (loop infinito no client) nao vira 1000 calls em 30s. **CRITICO.**
+- **Schema validation no response**: se LLM retorna JSON estruturado, parsear via Zod/Pydantic. Modelo aluciná schema com 1 campo errado e seu app crasha. **ALTO.**
+- **Token budget explicito**: max_tokens definido em CADA call. Sem default infinito.
+- **PII em prompts mapeado**: o que voce envia pro provider esta documentado pro user? Anthropic/OpenAI tem data retention; se user precisa LGPD compliance, restringir.
+- **Cost per turn estimado**: voce sabe quanto custa uma conversa media? Sem isso, surpresa na fatura.
+
+> Para pattern catalog completo + implementacoes de referencia, usar `/hm-llm-guardrails`.
 
 ### Custo x Performance
 - API calls externas (LLM, etc) sao justificadas — nenhuma call desnecessaria
