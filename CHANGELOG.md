@@ -44,7 +44,7 @@ LLM-native evolution + 4 skills novas + orquestrador. Motivado por aprendizados 
 - File/blob integrity (checksum, versioning, lifecycle)
 - Observabilidade pra detectar problemas cedo
 
-#### Nova skill: `/hm-perf` — performance profiling
+#### Nova skill: `/hm-performance` — performance profiling
 - Bundle size (alvos por framework: Next, Vite)
 - Render performance (Core Web Vitals: LCP, INP, CLS)
 - API latency (p50/p95/p99)

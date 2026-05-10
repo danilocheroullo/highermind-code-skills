@@ -40,7 +40,7 @@ Duas camadas:
 | `/hm-designer` | Validar interface | Pra onde o software está indo, não pra onde ele esteve. Sofisticação, encantamento, beleza. Padrão Linear/Stripe/A24. |
 | `/hm-ux-flow` | Validar fluxo | Não substitui designer (visual). Foca em DECISÃO do user. Friction points, hierarquia, recovery. |
 | `/hm-qa` | Testar tudo | Roda, quebra, verifica que funciona. Edge cases, fluxos, agente, infra, uso real. Checklist de bugs recorrentes. |
-| `/hm-perf` | Performance profiling | Bundle, render, API latency, DB, LLM tokens, network, memory. Numbers concretos com fix por gargalo. |
+| `/hm-performance` | Performance profiling | Bundle, render, API latency, DB, LLM tokens, network, memory. Numbers concretos com fix por gargalo. |
 | `/hm-data-integrity` | Dados sagrados | Backup, migration safety, destrutivas, runtime integrity, DR plan, compliance, file integrity. |
 | `/hm-llm-guardrails` | App com LLM | 12 patterns obrigatórios: sliding window, lazy client, in-flight dedupe, streaming abort, schema validation, cross-channel safety, cost tracking. |
 | `/hm-deploy` | Validar deploy | Multi-modelo: Container, Serverless, Desktop (Electron), Mobile (Expo), Library, CLI. Reprodutibilidade, segurança, dados. |
@@ -59,7 +59,7 @@ Duas camadas:
 /hm-ux-flow        fluxo na barra.
 /hm-engineer       código na barra (com LLM patterns).
 /hm-llm-guardrails se app integra Claude/GPT/Gemini.
-/hm-perf           latência/custo/bundle dentro do alvo.
+/hm-performance           latência/custo/bundle dentro do alvo.
 /hm-data-integrity dados protegidos. backup testado.
 /hm-security       auditoria de segurança L1/L2/L3.
 /hm-qa             funciona end-to-end. edge cases cobertos.

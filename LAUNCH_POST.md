@@ -38,7 +38,7 @@ Novo na v3:
 /hm-validate-all → orquestra 5 skills em report único
 /hm-llm-guardrails → 12 patterns pra app com LLM (sliding window, lazy client, in-flight dedupe…)
 /hm-data-integrity → backup, DR, compliance, dados sagrados
-/hm-perf → bundle, render, latency, LLM tokens
+/hm-performance → bundle, render, latency, LLM tokens
 /hm-ux-flow → DECISÃO do user, não visual
 ```
 
@@ -100,7 +100,7 @@ Outras coisas vieram dos projetos paralelos:
 - **/hm-deploy v3** virou multi-modelo (Container, Serverless, Electron, Expo, Library, CLI). Antes era 100% Docker-centric. Quando você está shipando uma `.app` Electron, "tem `.dockerignore`?" não ajuda.
 - **/hm-qa v3** ganhou edge case checklist (8 categorias de bugs que aparecem em 80% dos projetos quando ninguém testa de verdade)
 - **/hm-data-integrity** (skill nova) — dados sagrados como ritual: backup atômico/criptografado/testado/off-site, migration safety, DR plan, compliance LGPD/GDPR
-- **/hm-perf** (skill nova) — performance profiling com numbers concretos, alvos por métrica, fix por gargalo
+- **/hm-performance** (skill nova) — performance profiling com numbers concretos, alvos por métrica, fix por gargalo
 - **/hm-ux-flow** (skill nova) — não substitui designer (visual). Foca em DECISÃO do user. Friction points, hierarquia de decisão, recovery de erro
 - **/hm-validate-all** (skill nova) — orquestrador. Dispara 5 skills em ordem otimizada (security → engineer → qa → designer → deploy), reconcilia severidades, produz UM report priorizado
 
@@ -152,7 +152,7 @@ What's new in v3, motivated by shipping real LLM apps:
   optimized order, consolidates findings, prioritizes by ship-blocking
   vs technical debt.
 
-- New: /hm-data-integrity, /hm-perf, /hm-ux-flow.
+- New: /hm-data-integrity, /hm-performance, /hm-ux-flow.
 
 MIT. Markdown only. No install.
 
@@ -178,7 +178,7 @@ LLM. A v3 traz isso:
 
 /hm-llm-guardrails — patterns LLM-app obrigatórios
 /hm-data-integrity — backup, DR, compliance
-/hm-perf — performance profiling
+/hm-performanceormance — performance profiling
 /hm-ux-flow — DECISÃO do user
 /hm-validate-all — orquestrador pré-ship
 /hm-engineer v3 — LLM patterns no padrão senior

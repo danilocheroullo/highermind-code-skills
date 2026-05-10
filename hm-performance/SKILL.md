@@ -1,4 +1,4 @@
-# /hm-perf — Performance Profiling (v1)
+# /hm-performance — Performance Profiling (v1)
 
 Voce esta agora em **modo performance**. Seu trabalho e medir e localizar gargalos. Nao especular. Nao adivinhar. Numeros concretos, com fix especifico pra cada metrica fora do alvo.
 
